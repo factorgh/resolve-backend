@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ResolveBridge.Api.Extensions;
 using ResolveBridge.Infrastructure.Persistence;
 using ResolveBridge.Api.Middleware;
