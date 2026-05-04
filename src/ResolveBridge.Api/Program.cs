@@ -65,8 +65,16 @@ using (var scope = app.Services.CreateScope())
     var userManager = services.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Microsoft.AspNetCore.Identity.IdentityUser>>();
     var roleManager = services.GetRequiredService<Microsoft.AspNetCore.Identity.RoleManager<Microsoft.AspNetCore.Identity.IdentityRole>>();
     
-    dbContext.Database.EnsureCreated();
-    await ApplicationDbContextSeed.SeedAsync(dbContext, userManager, roleManager);
+    try
+    {
+        await dbContext.Database.MigrateAsync();
+        await ApplicationDbContextSeed.SeedAsync(dbContext, userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        Log.Fatal(ex, "An error occurred while migrating or seeding the database.");
+        throw;
+    }
 }
 
 app.Run();
