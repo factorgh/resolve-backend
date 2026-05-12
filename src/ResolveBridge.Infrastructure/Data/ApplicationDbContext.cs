@@ -152,6 +152,17 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>, IApplicatio
             entity.HasMany(e => e.Documents).WithOne(d => d.Application).HasForeignKey(d => d.ApplicationId);
             entity.HasMany(e => e.StatusHistory).WithOne(s => s.Application).HasForeignKey(s => s.ApplicationId);
             entity.HasOne(e => e.LoanLifecycle).WithOne(l => l.Application).HasForeignKey<LoanLifecycle>(l => l.ApplicationId);
+            
+            // Fix for SQL Server multiple cascade paths
+            entity.HasOne(e => e.Institution)
+                .WithMany(i => i.Applications)
+                .HasForeignKey(e => e.InstitutionId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(e => e.Product)
+                .WithMany(p => p.Applications)
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         builder.Entity<LoanLifecycle>(entity =>
@@ -163,6 +174,12 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>, IApplicatio
             entity.HasIndex(e => e.IsActive);
             entity.HasIndex(e => e.PaymentStatus);
             entity.Property(e => e.PaymentStatus).HasConversion<string>();
+            
+            // Fix for SQL Server multiple cascade paths
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.LoanLifecycles)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
             entity.Property(e => e.PrincipalAmount).HasPrecision(18, 2);
             entity.Property(e => e.InterestRate).HasPrecision(5, 2);
             entity.Property(e => e.TotalRepaymentAmount).HasPrecision(18, 2);
@@ -171,6 +188,12 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>, IApplicatio
             entity.Property(e => e.NextPaymentAmount).HasPrecision(18, 2);
             entity.Property(e => e.LateFeesAccrued).HasPrecision(18, 2);
             entity.HasMany(e => e.Payments).WithOne(p => p.LoanLifecycle).HasForeignKey(p => p.LoanLifecycleId);
+            
+            // Fix for SQL Server multiple cascade paths
+            entity.HasOne(e => e.Institution)
+                .WithMany()
+                .HasForeignKey(e => e.InstitutionId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         builder.Entity<Payment>(entity =>

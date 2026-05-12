@@ -15,20 +15,11 @@ public static class ServiceExtensions
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Data Source=resolvebridge.db";
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
         
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            if (connectionString.Contains("Host=") || connectionString.Contains("Server=") || connectionString.Contains("Port="))
-            {
-                // PostgreSQL (Production)
-                options.UseNpgsql(connectionString, b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
-            }
-            else
-            {
-                // SQLite (Development)
-                options.UseSqlite(connectionString, b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
-            }
+            options.UseSqlServer(connectionString, b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
         });
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());

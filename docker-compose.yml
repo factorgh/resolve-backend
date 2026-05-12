@@ -2,21 +2,21 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15-alpine
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: resolvebridge_db
     environment:
-      POSTGRES_USER: resolveuser
-      POSTGRES_PASSWORD: resolvepassword
-      POSTGRES_DB: resolvebridge
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=ResolvePassword123!
+      - MSSQL_PID=Developer
     ports:
-      - "5432:5432"
+      - "1433:1433"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mssqldata:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U resolveuser -d resolvebridge"]
-      interval: 5s
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ResolvePassword123! -C -Q 'SELECT 1'"]
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   api:
     build:
@@ -26,7 +26,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=resolvebridge;Username=resolveuser;Password=resolvepassword
+      - ConnectionStrings__DefaultConnection=Server=db;Database=ResolveBridge;User Id=sa;Password=ResolvePassword123!;TrustServerCertificate=True;
       - Jwt__SecretKey=a_very_long_and_secure_secret_key_for_local_production_testing
     ports:
       - "8080:8080"
@@ -35,4 +35,4 @@ services:
         condition: service_healthy
 
 volumes:
-  pgdata:
+  mssqldata:
